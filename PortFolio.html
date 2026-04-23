@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iicey | Plugins & Bots</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Black & Purple Theme */
+            --bg-base: #000000;
+            --bg-surface: #0a0a0a;
+            --bg-panel: rgba(15, 15, 15, 0.8);
+            --text-primary: #ffffff;
+            --text-secondary: #a3a3a3;
+            --purple-light: #d8b4fe;
+            --purple-main: #9333ea;
+            --purple-dark: #581c87;
+            --discord-brand: #5865F2;
+            --glow: 0 0 25px rgba(147, 51, 234, 0.5);
+            --glass-border: 1px solid rgba(147, 51, 234, 0.25);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-base);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--purple-dark);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--purple-main);
+        }
+
+        body {
+            background-color: var(--bg-base);
+            color: var(--text-primary);
+            line-height: 1.7;
+            overflow-x: hidden;
+            /* Subtle purple ambient glows on pure black */
+            background-image: radial-gradient(circle at 10% 20%, rgba(88, 28, 135, 0.15), transparent 30%),
+                              radial-gradient(circle at 90% 80%, rgba(147, 51, 234, 0.1), transparent 30%);
+        }
+
+        /* Utility Classes for JS Animations */
+        .reveal {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: all 0.8s cubic-bezier(0.5, 0, 0, 1);
+        }
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Navigation */
+        header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            z-index: 1000;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            transition: padding 0.3s ease;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1.2rem 2rem;
+        }
+
+        .logo {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            text-decoration: none;
+            letter-spacing: 1px;
+        }
+
+        .logo span {
+            color: var(--purple-main);
+            text-shadow: 0 0 10px rgba(147, 51, 234, 0.4);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2.5rem;
+        }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            width: 0; height: 2px;
+            bottom: -5px; left: 0;
+            background-color: var(--purple-main);
+            transition: width 0.3s ease;
+            box-shadow: var(--glow);
+        }
+
+        .nav-links a:hover {
+            color: var(--text-primary);
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        /* Sections */
+        section {
+            padding: 8rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        h2 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+        }
+
+        h2 span {
+            color: var(--purple-main);
+            text-shadow: var(--glow);
+        }
+
+        .section-subtitle {
+            color: var(--text-secondary);
+            font-size: 1.2rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding-top: 6rem;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(147, 51, 234, 0.1);
+            border: var(--glass-border);
+            color: var(--purple-light);
+            padding: 0.6rem 1.5rem;
+            border-radius: 50px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-bottom: 2rem;
+        }
+
+        .status-dot {
+            width: 10px; height: 10px;
+            background-color: var(--purple-main);
+            border-radius: 50%;
+            box-shadow: var(--glow);
+        }
+
+        .hero h1 {
+            font-size: 5.5rem;
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+        }
+
+        .hero h1 span {
+            display: block;
+            color: var(--purple-main);
+        }
+
+        .hero p.description {
+            color: var(--text-secondary);
+            max-width: 750px;
+            font-size: 1.25rem;
+            margin-bottom: 3rem;
+            font-weight: 300;
+        }
+
+        .hero p.description strong {
+            color: var(--purple-light);
+            font-weight: 600;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 1.2rem 3rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 800;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: var(--purple-main);
+            color: #fff;
+            box-shadow: 0 0 20px rgba(147, 51, 234, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--glow);
+            background: var(--purple-light);
+            color: #000;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--text-primary);
+            border: 1px solid var(--purple-main);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(147, 51, 234, 0.1);
+            transform: translateY(-3px);
+            box-shadow: var(--glow);
+        }
+
+        /* Glass Panel Styling */
+        .glass-panel {
+            background: var(--bg-panel);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: var(--glass-border);
+            border-radius: 16px;
+            padding: 3rem;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+        }
+
+        /* Services Section */
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+        }
+
+        .service-card {
+            background: var(--bg-surface);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 2.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .service-card.highlight {
+            border-color: var(--purple-main);
+            background: linear-gradient(180deg, rgba(147, 51, 234, 0.05) 0%, transparent 100%);
+        }
+
+        .service-card:hover {
+            transform: translateY(-10px);
+            border-color: var(--purple-main);
+            box-shadow: var(--glow);
+        }
+
+        .service-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            display: inline-block;
+        }
+
+        .service-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .service-card p {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        .cherry-badge {
+            display: inline-block;
+            background: rgba(147, 51, 234, 0.2);
+            color: var(--purple-light);
+            font-size: 0.8rem;
+            padding: 2px 8px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        /* Skills Section */
+        .skills-container {
+            display: flex;
+            flex-direction: column;
+            gap: 3rem;
+        }
+
+        .skill-category h3 {
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            color: var(--text-primary);
+            border-bottom: 2px solid var(--purple-dark);
+            padding-bottom: 0.5rem;
+            display: inline-block;
+        }
+
+        .skills-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .skill-item {
+            background: var(--bg-surface);
+            padding: 1.2rem;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 600;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            color: var(--text-secondary);
+            transition: all 0.3s ease;
+        }
+
+        .skill-item:hover {
+            transform: scale(1.05);
+            border-color: var(--purple-main);
+            color: #fff;
+            box-shadow: var(--glow);
+        }
+
+        /* Projects Section */
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2.5rem;
+        }
+
+        .project-card {
+            background: var(--bg-surface);
+            border-radius: 16px;
+            padding: 2.5rem;
+            border: 1px solid rgba(255,255,255,0.05);
+            transition: all 0.4s ease;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .project-card:hover {
+            transform: translateY(-10px);
+            border-color: var(--purple-main);
+            box-shadow: var(--glow);
+        }
+
+        .project-title {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            color: #fff;
+        }
+
+        .project-desc {
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            font-size: 1.05rem;
+            flex-grow: 1;
+        }
+
+        .tech-stack {
+            display: flex;
+            gap: 0.6rem;
+            flex-wrap: wrap;
+            margin-bottom: 2rem;
+        }
+
+        .tech-tag {
+            background: rgba(147, 51, 234, 0.1);
+            color: var(--purple-light);
+            padding: 0.4rem 1rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            border: 1px solid rgba(147, 51, 234, 0.3);
+        }
+
+        /* Contact Section */
+        .contact {
+            text-align: center;
+            padding-bottom: 8rem;
+        }
+
+        .contact-card {
+            background: var(--bg-surface);
+            border: var(--glass-border);
+            border-radius: 20px;
+            padding: 4rem 2rem;
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+        }
+
+        .contact-card h3 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            font-weight: 800;
+        }
+
+        .contact-card p {
+            color: var(--text-secondary);
+            font-size: 1.2rem;
+            margin-bottom: 3rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .discord-box {
+            display: inline-flex;
+            align-items: center;
+            gap: 1.2rem;
+            background: var(--discord-brand);
+            padding: 1.5rem 4rem;
+            border-radius: 12px;
+            color: #ffffff;
+            font-size: 1.8rem;
+            font-weight: 800;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .discord-box:hover {
+            transform: translateY(-5px);
+            background: #4752c4;
+            box-shadow: 0 15px 35px rgba(88, 101, 242, 0.4);
+        }
+
+        .contact-hint {
+            display: block;
+            margin-top: 1.5rem;
+            color: rgba(255, 255, 255, 0.3);
+            font-size: 0.95rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 2.5rem;
+            color: var(--text-secondary);
+            border-top: 1px solid rgba(255,255,255,0.05);
+            background: #000;
+            font-weight: 300;
+            letter-spacing: 1px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 3.5rem; }
+            .hero h1 span { font-size: 2.5rem; }
+            .nav-links { display: none; }
+            .btn-group { flex-direction: column; width: 100%; }
+            .btn { width: 100%; text-align: center; }
+            .contact-card { padding: 3rem 1.5rem; }
+            .contact-card h3 { font-size: 2rem; }
+            .discord-box { font-size: 1.3rem; padding: 1.2rem 2rem; width: 100%; justify-content: center;}
+            section { padding: 5rem 1.5rem; }
+            h2 { font-size: 2.8rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <header id="header">
+        <nav>
+            <a href="#" class="logo">ii<span>cey</span>.</a>
+            <div class="nav-links">
+                <a href="#about">About</a>
+                <a href="#services">Services</a>
+                <a href="#skills">Skills</a>
+                <a href="#projects">Projects</a>
+                <a href="#contact">Contact</a>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section id="hero" class="hero reveal">
+            <div class="status-badge">
+                <div class="status-dot"></div> Open for Commissions
+            </div>
+            <h1>iicey. <span>Plugins & Bots.</span></h1>
+            <p class="description">
+                I am a 16-year-old developer from Italy. My absolute specialty is engineering high-performance <strong>Minecraft Plugins</strong> and advanced <strong>Discord Bots</strong> of any kind. As a cherry on top, my core Java knowledge allows me to handle complex backends and APIs, too.
+            </p>
+            <div class="btn-group">
+                <a href="#projects" class="btn btn-primary">View My Work</a>
+                <a href="#contact" class="btn btn-secondary">Hire Me</a>
+            </div>
+        </section>
+
+        <section id="about" class="reveal">
+            <div class="section-header">
+                <h2>Behind the <span>Code</span></h2>
+                <p class="section-subtitle">Everything revolves around creating the perfect server experience.</p>
+            </div>
+            <div class="glass-panel">
+                <p style="margin-bottom: 1.5rem; font-size: 1.15rem; color: #d4d4d4;">
+                    My development journey is hyper-focused on multiplayer communities. I live and breathe the Spigot/Paper API and JDA (Java Discord API). When I code, my priority is ensuring servers can handle massive player counts and Discord communities have exactly the tools they need to thrive.
+                </p>
+                <p style="margin-bottom: 1.5rem; font-size: 1.15rem; color: #d4d4d4;">
+                    Whether it is a custom mini-game, an advanced anti-cheat, a complex economy system, or a Discord bot that perfectly syncs with your Minecraft database—I build it from scratch, heavily optimized, with zero lag.
+                </p>
+                <p style="font-size: 1.15rem; color: #d4d4d4;">
+                    <strong>The Cherry on Top:</strong> Because my foundation in Java is solid, my abilities don't stop at plugins and bots. If your network needs a standalone backend system, a custom REST API, or complex database structuring, I have the architecture skills to build it.
+                </p>
+            </div>
+        </section>
+
+        <section id="services" class="reveal">
+            <div class="section-header">
+                <h2>My <span>Focus</span></h2>
+                <p class="section-subtitle">What I build best.</p>
+            </div>
+            <div class="services-grid">
+                
+                <div class="service-card highlight">
+                    <div class="service-icon">⚔️</div>
+                    <h3>Minecraft Plugins</h3>
+                    <p>My primary service. Custom Spigot, Paper, and NMS plugins of any scale. Highly optimized code designed to handle massive player bases without impacting server TPS.</p>
+                </div>
+                
+                <div class="service-card highlight">
+                    <div class="service-icon">🤖</div>
+                    <h3>Discord Bots</h3>
+                    <p>Advanced, custom-tailored Discord bots utilizing JDA. Ticket systems, moderation tools, economy bots, or complete synchronization between your game server and Discord.</p>
+                </div>
+                
+                <div class="service-card">
+                    <div class="service-icon">🌐</div>
+                    <h3>Network Infrastructure</h3>
+                    <p>BungeeCord and Velocity setups. I write the proxy software that keeps your network connected, utilizing Redis and SQL for seamless cross-server data syncing.</p>
+                </div>
+                
+                <div class="service-card">
+                    <div class="cherry-badge">The Cherry on Top</div>
+                    <div class="service-icon">⚙️</div>
+                    <h3>Backend & APIs</h3>
+                    <p>Standalone Java applications and Spring Boot APIs. If your server requires custom backend architecture to connect to web dashboards or apps, I've got you covered.</p>
+                </div>
+
+            </div>
+        </section>
+
+        <section id="skills" class="reveal">
+            <div class="section-header">
+                <h2>Tech <span>Stack</span></h2>
+                <p class="section-subtitle">The tools I use to dominate the server space.</p>
+            </div>
+            <div class="glass-panel skills-container">
+                
+                <div class="skill-category">
+                    <h3>The Core Focus</h3>
+                    <div class="skills-grid">
+                        <div class="skill-item">Spigot / Paper API</div>
+                        <div class="skill-item">JDA (Discord Bots)</div>
+                        <div class="skill-item">NMS & Packets</div>
+                        <div class="skill-item">Bungee / Velocity</div>
+                    </div>
+                </div>
+
+                <div class="skill-category">
+                    <h3>Data & Logic</h3>
+                    <div class="skills-grid">
+                        <div class="skill-item">Java Core</div>
+                        <div class="skill-item">MySQL / MariaDB</div>
+                        <div class="skill-item">Redis (Pub/Sub)</div>
+                        <div class="skill-item">PostgreSQL</div>
+                    </div>
+                </div>
+
+                <div class="skill-category">
+                    <h3>The Cherry on Top</h3>
+                    <div class="skills-grid">
+                        <div class="skill-item">Spring Boot</div>
+                        <div class="skill-item">REST APIs</div>
+                        <div class="skill-item">Git & GitHub</div>
+                        <div class="skill-item">Maven / Gradle</div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <section id="projects" class="reveal">
+            <div class="section-header">
+                <h2>Featured <span>Work</span></h2>
+                <p class="section-subtitle">A showcase of recent plugins, bots, and systems.</p>
+            </div>
+            <div class="projects-grid">
+                
+                <div class="project-card">
+                    <h3 class="project-title">Custom Mini-Game Framework</h3>
+                    <div class="tech-stack">
+                        <span class="tech-tag">Java</span>
+                        <span class="tech-tag">Spigot API</span>
+                        <span class="tech-tag">NMS</span>
+                    </div>
+                    <p class="project-desc">A highly scalable plugin allowing server owners to deploy entirely new mini-games rapidly. Features lag-free arena rollbacks, custom packet manipulation, and advanced game-state logic.</p>
+                </div>
+
+                <div class="project-card">
+                    <h3 class="project-title">Server Sync Discord Bot</h3>
+                    <div class="tech-stack">
+                        <span class="tech-tag">Java</span>
+                        <span class="tech-tag">JDA</span>
+                        <span class="tech-tag">Redis</span>
+                    </div>
+                    <p class="project-desc">An advanced Discord bot that communicates directly with the Minecraft server network in real-time. Features live chat relay, in-game role syncing, and live server statistics embedded directly into Discord channels.</p>
+                </div>
+
+                <div class="project-card">
+                    <h3 class="project-title">Cross-Server Economy Core</h3>
+                    <div class="tech-stack">
+                        <span class="tech-tag">Java</span>
+                        <span class="tech-tag">Paper API</span>
+                        <span class="tech-tag">MySQL</span>
+                    </div>
+                    <p class="project-desc">A heavy-duty core plugin replacing multiple third-party resources. Handles instantaneous data synchronization of player balances, inventories, and punishments across a 10+ server network seamlessly.</p>
+                </div>
+
+            </div>
+        </section>
+
+        <section id="contact" class="contact reveal">
+            <div class="contact-card">
+                <h3>Let's Build Something</h3>
+                <p>If you need a flawless <strong>Minecraft Plugin</strong>, a powerful <strong>Discord Bot</strong>, or custom backend infrastructure, I am ready to write the code.</p>
+                
+                <a href="https://discord.com/users/972x_" target="_blank" class="discord-box">
+                    <svg width="40" height="40" viewBox="0 0 127.14 96.36" fill="white" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a67.58,67.58,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1,105.25,105.25,0,0,0,32.19-16.14c2.64-27.38-4.51-51.11-19.32-72.1ZM42.68,65.33C38,65.33,34.05,60.81,34.05,55.22s3.84-10.13,8.63-10.13,8.71,4.55,8.68,10.13C51.36,60.81,47.41,65.33,42.68,65.33Zm41.73,0c-4.68,0-8.63-4.52-8.63-10.11s3.84-10.13,8.63-10.13,8.71,4.55,8.68,10.13C93.12,60.81,89.17,65.33,84.41,65.33Z"/>
+                    </svg>
+                    @972x_
+                </a>
+                <span class="contact-hint">DM ME ON DISCORD</span>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 iicey. All rights reserved.</p>
+    </footer>
+
+    <script>
+        function reveal() {
+            var reveals = document.querySelectorAll(".reveal");
+            for (var i = 0; i < reveals.length; i++) {
+                var windowHeight = window.innerHeight;
+                var elementTop = reveals[i].getBoundingClientRect().top;
+                var elementVisible = 100;
+                
+                if (elementTop < windowHeight - elementVisible) {
+                    reveals[i].classList.add("active");
+                }
+            }
+        }
+        window.addEventListener("scroll", reveal);
+        reveal(); // Trigger once on load
+    </script>
+</body>
+</html>
